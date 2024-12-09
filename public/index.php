@@ -8,11 +8,7 @@ use Dotenv\Dotenv;
 $dotenv = Dotenv::createImmutable(__DIR__ . "/../");
 $dotenv->load();
 
-require_once __DIR__ . "/../src/App/Config/db.php";
+use App\Core\Router;
 
-try {
-	$db = Database::getInstance();
-	echo "Connexion réussi à la base de données.";
-} catch (PDOException $e) {
-	echo "Erreur : " . $e->getMessage();
-}
+$router = require __DIR__ . "/../src/App/Routes/web.php";
+$router->dispatch($_SERVER["REQUEST_URI"], $_SERVER["REQUEST_METHOD"]);
