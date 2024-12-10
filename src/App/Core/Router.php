@@ -19,20 +19,24 @@ class Router
 	{
 		foreach ($this->routes as $route)
 		{
-			if ($route['method'] === strtoupper($requestMethod) && $route['path'] === $requestUri)
+			$pattern = preg_replace("/\{[a-zA-Z0-9_]+\}/", "([a-zA-Z0-9_]+)", $route['path']);
+			$pattern = "#^" . $pattern . "$#";
+
+			if ($route['method'] === strtoupper($requestMethod) && preg_match($pattern, $requestUri, $matches))
 			{
+				array_shift($matches);
 				if (is_callable($route['callback']))
 				{
-					return call_user_func($route['callback']);
+					return call_user_func_array($route['callback'], $matches);
 				} elseif (is_array($route['callback']))
 				{
 					[$controller, $method] = $route['callback'];
 					$controller = new $controller();
-					return $controller->$method();
+					return call_user_func_array([$controller, $method], $matches);
 				}
 			}
 		}
 		http_response_code(404);
-		echo "404 - Not found";
+		echo "404 - Non-trouvée";
 	}
 }
